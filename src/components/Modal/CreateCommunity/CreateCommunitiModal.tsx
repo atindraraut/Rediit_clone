@@ -17,7 +17,13 @@ import {
   Flex,
   Icon,
 } from "@chakra-ui/react";
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { BsFillEyeFill, BsFillPersonFill } from "react-icons/bs";
@@ -50,6 +56,7 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
   };
 
   const handleCreateCommunity = async () => {
+    if (error) setError("");
     //validate community
     const format = /[ `!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/;
     if (format.test(communityName) || communityName.length < 3) {
@@ -61,20 +68,27 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
     try {
       //check name is not taken and if valid name create community
       const communityDocRef = doc(firestore, "communities", communityName);
-      const communityDOc = await getDoc(communityDocRef);
-      if (communityDOc.exists()) {
-        throw new Error(`Sorry, r/${communityName} is taken,Try another.`);
-        return;
-      }
-      //create a community
-      const tempObj = {
-        cratorId: user?.uid,
-        createdAt: serverTimestamp(),
-        numberOfMember: 1,
-        privacyType: communityType,
-      };
-      console.log("tempobj", tempObj);
-      await setDoc(communityDocRef, tempObj);
+
+      await runTransaction(firestore, async (transaction) => {
+        const communityDOc = await transaction.get(communityDocRef);
+        if (communityDOc.exists()) {
+          throw new Error(`Sorry, r/${communityName} is taken,Try another.`);
+          return;
+        }
+        //create a community
+        const tempObj = {
+          cratorId: user?.uid,
+          createdAt: serverTimestamp(),
+          numberOfMember: 1,
+          privacyType: communityType,
+        };
+        console.log("tempobj", tempObj);
+        transaction.set(communityDocRef, tempObj);
+        transaction.set(
+          doc(firestore, `users/${user?.uid}/communitySnippets`, communityName),
+          { communityId: communityName, isModerator: true }
+        );
+      });
     } catch (error: any) {
       console.log("handle create community error:", error);
       setError(error.message);
@@ -82,6 +96,7 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
     }
     setLoading(false);
   };
+
   return (
     <>
       <Modal isOpen={open} onClose={handleClose} size="lg">

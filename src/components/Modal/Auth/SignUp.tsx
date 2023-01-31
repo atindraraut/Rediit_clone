@@ -1,13 +1,15 @@
 import { AuthModalState } from "@/src/atoms/authModalAtom";
-import { auth } from "@/src/firebase/clientApp";
+import { auth, firestore } from "@/src/firebase/clientApp";
 import { Input, Button, Flex, Text } from "@chakra-ui/react";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { FIREBASE_ERRORS } from "@/src/firebase/error";
+import { User } from "firebase/auth";
+import { addDoc, collection } from "firebase/firestore";
 
 const SignUp: React.FC = () => {
-  const [createUserWithEmailAndPassword, user, loading, userError] =
+  const [createUserWithEmailAndPassword, userCred, loading, userError] =
     useCreateUserWithEmailAndPassword(auth);
   const [SignupForm, setSignupForm] = useState({
     email: "",
@@ -33,6 +35,15 @@ const SignUp: React.FC = () => {
       [event.target.name]: event.target.value,
     }));
   };
+
+  const createUserDocument = async (user: User) => {
+    addDoc(collection(firestore, "users"), JSON.parse(JSON.stringify(user)));
+  };
+  useEffect(() => {
+    if (userCred) {
+      createUserDocument(userCred.user);
+    }
+  }, [userCred]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -104,7 +115,8 @@ const SignUp: React.FC = () => {
       />
       {(error || userError) && (
         <Text textAlign="center" fontSize="10pt" color="red">
-          {error || FIREBASE_ERRORS[userError?.message as keyof typeof FIREBASE_ERRORS]}
+          {error ||
+            FIREBASE_ERRORS[userError?.message as keyof typeof FIREBASE_ERRORS]}
         </Text>
       )}
       <Button width="100%" height="36px" type="submit" isLoading={loading}>
