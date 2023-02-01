@@ -82,7 +82,6 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
           numberOfMember: 1,
           privacyType: communityType,
         };
-        console.log("tempobj", tempObj);
         transaction.set(communityDocRef, tempObj);
         transaction.set(
           doc(firestore, `users/${user?.uid}/communitySnippets`, communityName),
@@ -90,7 +89,6 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
         );
       });
     } catch (error: any) {
-      console.log("handle create community error:", error);
       setError(error.message);
       setLoading(false);
     }

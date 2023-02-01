@@ -12,7 +12,6 @@ type RightContentProps = {
 };
 
 const RightContent:React.FC<RightContentProps> = ({user}) => {
-    console.log("user",user?.email)
     return <>
     <AuthModal/>
     <Flex justify='center' align='center'>
