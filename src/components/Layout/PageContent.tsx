@@ -25,6 +25,7 @@ const PageContent: React.FC<PageContentProps> = ({ children }) => {
           direction="column"
           display={{ base: 'none', md: "flex" }}
           mr={{ base: 0, md: 6 }}
+          flexGrow={1}
         >
           {children && children[1 as keyof typeof children]}
         </Flex>
