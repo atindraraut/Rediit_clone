@@ -15,11 +15,11 @@ export type Post={
 }
 interface PostState{
     selectedpost:Post|null;
-    post:Post[];
+    posts:Post[];
     //post votes
 }
 const defaultPostState:PostState={
     selectedpost:null,
-    post:[],
+    posts:[],
 }
 export const PostState=atom({key:'postState',default:defaultPostState})
