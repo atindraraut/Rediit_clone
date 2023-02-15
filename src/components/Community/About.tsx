@@ -7,13 +7,19 @@ import {
   Icon,
   Stack,
   Text,
+  Image,
+  Spinner,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { RiCakeLine } from "react-icons/ri";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import moment from "moment";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/src/firebase/clientApp";
+import useSelectFile from "@/src/hooks/useSelectFile";
+import { FaReddit } from "react-icons/fa";
 
 type AboutProps = {
   communityData: Community;
@@ -21,6 +27,14 @@ type AboutProps = {
 
 const About: React.FC<AboutProps> = ({ communityData }) => {
   const router = useRouter();
+  const [user] = useAuthState(auth);
+  const selectedFileRef = useRef<HTMLInputElement>(null);
+  const { selectedFile, setSelectedFile, onSelectFile } = useSelectFile();
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const onUpdateImage = async () => {
+    
+
+  };
   return (
     <Box position="sticky" top="14px">
       <Flex
@@ -71,6 +85,53 @@ const About: React.FC<AboutProps> = ({ communityData }) => {
               Create Post
             </Button>
           </Link>
+          {user?.uid === communityData.creatorId && (
+            <>
+              <Divider />
+              <Stack spacing={1} fontSize="10pt">
+                <Text fontWeight={600}>Admin</Text>
+                <Flex align="center" justify="space-between">
+                  <Text
+                    color="blue.500"
+                    cursor="pointer"
+                    _hover={{ textDecoration: "underline" }}
+                    onClick={() => {}}
+                  >
+                    Change Image
+                  </Text>
+                  {communityData.imageURL || selectedFile ? (
+                    <Image
+                      src={selectedFile || communityData.imageURL}
+                      borderRadius="full"
+                      boxSize="40px"
+                      alt="Community Image"
+                    />
+                  ) : (
+                    <Icon
+                      as={FaReddit}
+                      fontSize={40}
+                      color="brand.100"
+                      mr={2}
+                    />
+                  )}
+                </Flex>
+                {selectedFile &&
+                  (uploadingImage ? (
+                    <Spinner />
+                  ) : (
+                    <Text cursor="pointer" onClick={onUpdateImage}>
+                      Save Changes
+                    </Text>
+                  ))}
+                <input
+                  ref={selectedFileRef}
+                  type="file"
+                  hidden
+                  onChange={onSelectFile}
+                />
+              </Stack>
+            </>
+          )}
         </Stack>
       </Flex>
     </Box>
