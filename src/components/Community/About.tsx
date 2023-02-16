@@ -1,4 +1,4 @@
-import { Community } from "@/src/atoms/communitiesAtom";
+import { Community, CommunityState } from "@/src/atoms/communitiesAtom";
 import {
   Box,
   Button,
@@ -17,9 +17,12 @@ import moment from "moment";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/src/firebase/clientApp";
+import { auth, firestore, storage } from "@/src/firebase/clientApp";
 import useSelectFile from "@/src/hooks/useSelectFile";
 import { FaReddit } from "react-icons/fa";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
+import { doc, updateDoc } from "firebase/firestore";
+import { useSetRecoilState } from "recoil";
 
 type AboutProps = {
   communityData: Community;
@@ -31,10 +34,30 @@ const About: React.FC<AboutProps> = ({ communityData }) => {
   const selectedFileRef = useRef<HTMLInputElement>(null);
   const { selectedFile, setSelectedFile, onSelectFile } = useSelectFile();
   const [uploadingImage, setUploadingImage] = useState(false);
+  const setCommunityStateValue = useSetRecoilState(CommunityState);
   const onUpdateImage = async () => {
-    
-
+    if (!selectedFile) return;
+    setUploadingImage(true);
+    try {
+      const imageRef = ref(storage, `communities/${communityData.id}/image`);
+      await uploadString(imageRef, selectedFile, "data_url");
+      const downloadURL = await getDownloadURL(imageRef);
+      await updateDoc(doc(firestore, "communities", communityData.id), {
+        imageURL: downloadURL,
+      });
+      setCommunityStateValue((prev) => ({
+        ...prev,
+        currentCommunity: {
+          ...prev.currentCommunity,
+          imageURL: downloadURL,
+        } as Community,
+      }));
+    } catch (error) {
+      console.log("update image error", error);
+    }
+    setUploadingImage(false);
   };
+  console.log("print user data", user?.uid, communityData.creatorId);
   return (
     <Box position="sticky" top="14px">
       <Flex
@@ -95,7 +118,7 @@ const About: React.FC<AboutProps> = ({ communityData }) => {
                     color="blue.500"
                     cursor="pointer"
                     _hover={{ textDecoration: "underline" }}
-                    onClick={() => {}}
+                    onClick={() => selectedFileRef.current?.click()}
                   >
                     Change Image
                   </Text>
