@@ -27,28 +27,11 @@ type communityPageProps = {
 };
 
 const communitypage: React.FC<communityPageProps> = ({ communityData }) => {
-  const [user] = useAuthState(auth);
-  const {setPostStateValue}=usePosts()
-
   const setCommunityStateValue = useSetRecoilState(CommunityState);
   if (!communityData) {
     return <NotFound />;
   }
-  const getpostVotes = async () => {
-    if (user) {
-      const postVotesQueryRef = collection(
-        firestore,
-        `users/${user.uid}/postVotes`
-      );
-      const postQuery = query(postVotesQueryRef);
-      const postDocs = await getDocs(postQuery);
-      const votesValue = postDocs.docs.map((doc) => ({ ...doc.data() }));
-      setPostStateValue((prev) => ({ ...prev, postVotes: votesValue as [] }));
-    }
-  };
-  useEffect(() => {
-    getpostVotes();
-  }, [user]);
+
   useEffect(() => {
     setCommunityStateValue((prev) => ({
       ...prev,
@@ -95,4 +78,3 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 }
 export default communitypage;
-
