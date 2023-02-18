@@ -5,10 +5,20 @@ import Header from "@/src/components/Community/Header";
 import NotFound from "@/src/components/Community/NotFound";
 import PageContent from "@/src/components/Layout/PageContent";
 import Posts from "@/src/components/Posts/Posts";
-import { firestore } from "@/src/firebase/clientApp";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, firestore } from "@/src/firebase/clientApp";
+import usePosts from "@/src/hooks/usePosts";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 import React, { useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
 import safeJsonStringify from "safe-json-stringify";
 
@@ -17,24 +27,44 @@ type communityPageProps = {
 };
 
 const communitypage: React.FC<communityPageProps> = ({ communityData }) => {
-  
-  const setCommunityStateValue=useSetRecoilState(CommunityState)
+  const [user] = useAuthState(auth);
+  const {setPostStateValue}=usePosts()
+
+  const setCommunityStateValue = useSetRecoilState(CommunityState);
   if (!communityData) {
     return <NotFound />;
   }
-  useEffect(()=>{
-    setCommunityStateValue(prev=>({...prev,currentCommunity:communityData}))
-  },[])
+  const getpostVotes = async () => {
+    if (user) {
+      const postVotesQueryRef = collection(
+        firestore,
+        `users/${user.uid}/postVotes`
+      );
+      const postQuery = query(postVotesQueryRef);
+      const postDocs = await getDocs(postQuery);
+      const votesValue = postDocs.docs.map((doc) => ({ ...doc.data() }));
+      setPostStateValue((prev) => ({ ...prev, postVotes: votesValue as [] }));
+    }
+  };
+  useEffect(() => {
+    getpostVotes();
+  }, [user]);
+  useEffect(() => {
+    setCommunityStateValue((prev) => ({
+      ...prev,
+      currentCommunity: communityData,
+    }));
+  }, []);
   return (
     <>
       <Header communityData={communityData} />
       <PageContent>
         <>
           <CreatePostLink />
-          <Posts communityData={communityData}/>
+          <Posts communityData={communityData} />
         </>
         <>
-          <About communityData={communityData}/>
+          <About communityData={communityData} />
         </>
       </PageContent>
     </>
@@ -65,3 +95,4 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 }
 export default communitypage;
+

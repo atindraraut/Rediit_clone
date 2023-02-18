@@ -2,11 +2,13 @@ import { collection, deleteDoc, doc, writeBatch } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { AuthModalState } from "../atoms/authModalAtom";
 import { Post, PostState, postVote } from "../atoms/postsAtom";
 import { auth, firestore, storage } from "../firebase/clientApp";
 
 const usePosts = () => {
+  const setAuthModalState = useSetRecoilState(AuthModalState);
   const [user] = useAuthState(auth);
   const [postStateValue, setPostStateValue] = useRecoilState(PostState);
   useEffect(() => {
@@ -14,7 +16,11 @@ const usePosts = () => {
   }, [postStateValue]);
 
   const onVote = async (post: Post, vote: number, communityId: string) => {
-    //check user and only auth user can vote
+    //check user and only auth user can voteevent.stopPropagation();
+    if (!user?.uid) {
+      setAuthModalState({ open: true, view: "login" });
+      return;
+    }
     try {
       const { voteStatus } = post;
       const existingVote = postStateValue.postVotes.find(
@@ -59,31 +65,31 @@ const usePosts = () => {
           voteChange == -1;
         } else {
           //add/substract vote by 2 to flip vote
-          updatedPost.voteStatus = voteStatus + 2 + vote;
+          updatedPost.voteStatus = voteStatus + 2 * vote;
 
           const voteindex = postStateValue.postVotes.findIndex(
             (vote) => vote.id === existingVote.id
           );
           updatedPostVotes[voteindex] = { ...existingVote, voteValue: vote };
           batch.update(postVoteRef, { voteValue: vote });
-          voteChange = 2 + vote;
+          voteChange = 2 * vote;
         }
       }
-
-      const postRef = doc(firestore, "posts", post.id);
-      batch.update(postRef, { voteStatus: voteStatus + voteChange });
-      await batch.commit;
-
       //upate local store logic
       const postIdx = postStateValue.posts.findIndex(
         (item) => item.id === post.id
       );
       updatedPosts[postIdx] = updatedPost;
+      console.log("postquerry", updatedPostVotes, postIdx);
       setPostStateValue((prev) => ({
         ...prev,
         posts: updatedPosts,
         postVotes: updatedPostVotes,
       }));
+
+      const postRef = doc(firestore, "posts", post.id);
+      batch.update(postRef, { voteStatus: voteStatus + voteChange });
+      await batch.commit();
     } catch (error) {
       console.log("voting error", error);
     }
@@ -122,3 +128,4 @@ const usePosts = () => {
   };
 };
 export default usePosts;
+
