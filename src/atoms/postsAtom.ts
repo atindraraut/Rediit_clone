@@ -13,13 +13,20 @@ export type Post={
     communityImageURL?:string;
     createdAt:Timestamp;
 }
+export type postVote={
+    id:string,
+    postId:string,
+    communityId:string,
+    voteValue:Number
+}
 interface PostState{
     selectedpost:Post|null;
     posts:Post[];
-    //post votes
+    postVotes:postVote[]
 }
 const defaultPostState:PostState={
     selectedpost:null,
     posts:[],
+    postVotes:[],
 }
 export const PostState=atom({key:'postState',default:defaultPostState})
