@@ -1,10 +1,12 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   increment,
   writeBatch,
 } from "firebase/firestore";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilState, useSetRecoilState } from "recoil";
@@ -17,9 +19,10 @@ import {
 import { auth, firestore } from "../firebase/clientApp";
 const useCommunityData = () => {
   const [user] = useAuthState(auth);
+  const router = useRouter();
   const [communityStateValue, setCommunityStateValue] =
     useRecoilState(CommunityState);
-  const setAuthModalState=useSetRecoilState(AuthModalState);
+  const setAuthModalState = useSetRecoilState(AuthModalState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,9 +32,9 @@ const useCommunityData = () => {
   ) => {
     //is the user signed in?
     //if not prompt for sign in
-    if(!user){
-        setAuthModalState({open:true,view:'login'});
-        return;
+    if (!user) {
+      setAuthModalState({ open: true, view: "login" });
+      return;
     }
     if (isJoined) {
       leaveCommunity(communityData.id);
@@ -59,9 +62,29 @@ const useCommunityData = () => {
     setLoading(false);
   };
 
+  const getCommunityData = async (communityId: string) => {
+    try {
+      const communityDocRef = doc(firestore, "communities", communityId);
+      const communityDoc = await getDoc(communityDocRef);
+      setCommunityStateValue((prev) => ({
+        ...prev,
+        currentCommunity: { id: communityDoc.id, ...communityDoc.data() } as Community,
+      }));
+    } catch (error) {
+      console.log("getcommunitydata", error);
+    }
+  };
+  useEffect(() => {
+    const { communityId } = router.query;
+    if (communityId && !communityStateValue.currentCommunity) {
+      getCommunityData(communityId as string);
+    }
+  }, [router.query,communityStateValue.currentCommunity]);
+
   useEffect(() => {
     if (!user) return;
     getMySnippets();
+    setCommunityStateValue((prev) => ({ ...prev, mySnippets: [] }));
   }, [user]);
 
   const joinCommunity = async (communityData: Community) => {

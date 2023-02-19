@@ -8,6 +8,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
+import { Router, useRouter } from "next/router";
 import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
@@ -19,13 +20,20 @@ import { auth, firestore, storage } from "../firebase/clientApp";
 const usePosts = () => {
   const setAuthModalState = useSetRecoilState(AuthModalState);
   const [user] = useAuthState(auth);
+  const router = useRouter();
   const [postStateValue, setPostStateValue] = useRecoilState(PostState);
   const currentCommunity = useRecoilValue(CommunityState).currentCommunity;
   useEffect(() => {
     console.log("poststatevalue", postStateValue);
   }, [postStateValue]);
 
-  const onVote = async (post: Post, vote: number, communityId: string) => {
+  const onVote = async (
+    event: React.MouseEvent<SVGElement, MouseEvent>,
+    post: Post,
+    vote: number,
+    communityId: string
+  ) => {
+    event.stopPropagation();
     //check user and only auth user can voteevent.stopPropagation();
     if (!user?.uid) {
       setAuthModalState({ open: true, view: "login" });
@@ -96,6 +104,12 @@ const usePosts = () => {
         posts: updatedPosts,
         postVotes: updatedPostVotes,
       }));
+      if (postStateValue.selectedpost) {
+        setPostStateValue((prev) => ({
+          ...prev,
+          selectedpost: updatedPost,
+        }));
+      }
 
       const postRef = doc(firestore, "posts", post.id);
       batch.update(postRef, { voteStatus: voteStatus + voteChange });
@@ -105,7 +119,11 @@ const usePosts = () => {
     }
   };
 
-  const onSelectpost = () => {};
+  const onSelectpost = (post: Post) => {
+    setPostStateValue((prev) => ({ ...prev, selectedpost: post }));
+
+    router.push(`/r/${post.communityId}/comments/${post.id}`);
+  };
 
   const onDeletepost = async (post: Post): Promise<boolean> => {
     try {
@@ -147,6 +165,12 @@ const usePosts = () => {
     if (!user || !currentCommunity?.id) return;
     getCommunityPostVotes(currentCommunity?.id);
   }, [user, currentCommunity]);
+
+  useEffect(() => {
+    if (!user) {
+      setPostStateValue((prev) => ({ ...prev, postVotes: [] }));
+    }
+  }, [user]);
 
   return {
     postStateValue,

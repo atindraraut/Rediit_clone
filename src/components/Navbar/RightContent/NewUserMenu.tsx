@@ -27,12 +27,11 @@ type userMenuProps = {
 };
 
 const userMenu: React.FC<userMenuProps> = ({ user }) => {
-  const resetCommunityState=useResetRecoilState(CommunityState)
   const setAuthModalState = useSetRecoilState(AuthModalState);
 
   const logout=async()=>{
     await signOut(auth);
-    resetCommunityState();
+    // resetCommunityState();
   }
   return (
     <Menu>
