@@ -68,7 +68,10 @@ const useCommunityData = () => {
       const communityDoc = await getDoc(communityDocRef);
       setCommunityStateValue((prev) => ({
         ...prev,
-        currentCommunity: { id: communityDoc.id, ...communityDoc.data() } as Community,
+        currentCommunity: {
+          id: communityDoc.id,
+          ...communityDoc.data(),
+        } as Community,
       }));
     } catch (error) {
       console.log("getcommunitydata", error);
@@ -79,7 +82,7 @@ const useCommunityData = () => {
     if (communityId && !communityStateValue.currentCommunity) {
       getCommunityData(communityId as string);
     }
-  }, [router.query,communityStateValue.currentCommunity]);
+  }, [router.query, communityStateValue.currentCommunity]);
 
   useEffect(() => {
     if (!user) return;
@@ -94,6 +97,7 @@ const useCommunityData = () => {
       const newSnippet: CommunitySnippet = {
         communityId: communityData.id,
         imageURL: communityData.imageURL || "",
+        isModerator: user?.uid === communityData.creatorId,
       };
       //creating a new community snippets
       batch.set(
