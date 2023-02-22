@@ -6,11 +6,12 @@ import React from "react";
 import { useSetRecoilState } from "recoil";
 import { TiHome } from "react-icons/ti";
 import Communities from "./Communities";
+import useDirectory from "@/src/hooks/useDirectory";
 
 const userMenu: React.FC = () => {
-  const setAuthModalState = useSetRecoilState(AuthModalState);
+  const {directoryState}=useDirectory()
   return (
-    <Menu>
+    <Menu isOpen={directoryState.isOpen}>
       <MenuButton
         cursor="pointer"
         padding="0px 2px"
