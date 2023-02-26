@@ -37,7 +37,7 @@ const communitypage: React.FC<communityPageProps> = ({ communityData }) => {
       ...prev,
       currentCommunity: communityData,
     }));
-  }, []);
+  }, [communityData]);
   return (
     <>
       <Header communityData={communityData} />

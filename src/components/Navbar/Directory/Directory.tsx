@@ -9,7 +9,7 @@ import Communities from "./Communities";
 import useDirectory from "@/src/hooks/useDirectory";
 
 const userMenu: React.FC = () => {
-  const {directoryState}=useDirectory()
+  const {directoryState,toggleOpen}=useDirectory()
   return (
     <Menu isOpen={directoryState.isOpen}>
       <MenuButton
@@ -19,6 +19,7 @@ const userMenu: React.FC = () => {
         _hover={{ outline: "1px solid", outlineColor: "gray200" }}
         mr={2}
         ml={{ base: 0, md: 2 }}
+        onClick={toggleOpen}
       >
         <Flex
           align="center"

@@ -1,11 +1,29 @@
-import React from 'react';
-import { useRecoilState } from 'recoil';
-import { DirectoryMenuState } from '../atoms/directoryMenuAtom';
-
+import { MenuItem } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import React from "react";
+import { useRecoilState } from "recoil";
+import {
+  DirectoryMenuItem,
+  DirectoryMenuState,
+} from "../atoms/directoryMenuAtom";
 
 const useDirectory = () => {
-    const {directoryState,setDirectoryState}=useRecoilState(DirectoryMenuState);
+  const router = useRouter();
+  const [directoryState, setDirectoryState] =
+    useRecoilState(DirectoryMenuState);
 
-    return {directoryState};
-}
+  const toggleOpen = () => {
+    setDirectoryState((prev) => ({ ...prev, isOpen: !directoryState.isOpen }));
+  };
+
+  const onSelectMenuItem = (menuItem: DirectoryMenuItem) => {
+    setDirectoryState((prev) => ({ ...prev, selectedMenuItem: menuItem }));
+    router.push(menuItem.link);
+    if(directoryState.isOpen){
+        toggleOpen();
+    }
+  };
+
+  return { directoryState, toggleOpen ,onSelectMenuItem};
+};
 export default useDirectory;
