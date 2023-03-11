@@ -55,6 +55,8 @@ const communitypage: React.FC<communityPageProps> = ({ communityData }) => {
 };
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   //get community data and pass it to client
+  console.log("GET SERVER SIDE PROPS RUNNING");
+
   try {
     const communityDocRef = doc(
       firestore,
@@ -62,6 +64,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       context.query.communityId as string
     );
     const communityDoc = await getDoc(communityDocRef);
+    console.log("running right");
     return {
       props: {
         communityData: communityDoc.exists()

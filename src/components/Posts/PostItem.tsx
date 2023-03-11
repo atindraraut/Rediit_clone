@@ -11,6 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import moment from "moment";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
@@ -37,6 +38,7 @@ type PostItemProps = {
   ) => void;
   onDeletePost: (post: Post) => Promise<boolean>;
   onSelectPost?: (post: Post) => void;
+  homePage?: boolean;
 };
 
 const PostItem: React.FC<PostItemProps> = ({
@@ -46,12 +48,13 @@ const PostItem: React.FC<PostItemProps> = ({
   onVote,
   onDeletePost,
   onSelectPost,
+  homePage,
 }) => {
   const [loadingImage, setloadingimage] = useState(true);
   const [loadingDelete, setloadingDelete] = useState(false);
   const [error, setError] = useState(false);
   const singlePostPage = !onSelectPost;
-  const router=useRouter();
+  const router = useRouter();
   const handleDelete = async (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
@@ -63,8 +66,8 @@ const PostItem: React.FC<PostItemProps> = ({
         throw new Error("Failed to delete post");
       }
       console.log("Post was successfully deleted");
-      if(singlePostPage){
-        router.push(`/r/${post.communityId}`)
+      if (singlePostPage) {
+        router.push(`/r/${post.communityId}`);
       }
     } catch (error: any) {
       setError(error.message);
@@ -122,8 +125,31 @@ const PostItem: React.FC<PostItemProps> = ({
         <Stack spacing={1} p="10px">
           <Stack direction="row" spacing={0.6} align="center" fontSize="9pt">
             {/* home page check */}
+            {homePage && (
+              <>
+                {post.communityImageURL ? (
+                  <Image
+                    src={post.communityImageURL}
+                    borderRadius="full"
+                    boxSize="18px"
+                    mr={2}
+                  />
+                ) : (
+                  <Icon as={FaReddit} fontSize="18pt" mr={1} color="blue.500" />
+                )}
+                <Link href={`r/${post.communityId}`}>
+                  <Text
+                    fontWeight={700}
+                    _hover={{ textDecoration: "underline" }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >{`r/${post.communityId}`}</Text>
+                </Link>
+              </>
+            )}
             <Text>
-              POsted by u/{post.creatorDisplayName}{" "}
+              Posted by u/{post.creatorDisplayName}{" "}
               {moment(new Date(post.createdAt?.seconds * 1000)).fromNow()}
             </Text>
           </Stack>
