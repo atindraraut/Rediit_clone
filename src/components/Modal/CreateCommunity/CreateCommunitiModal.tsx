@@ -1,4 +1,5 @@
 import { firestore, auth } from "@/src/firebase/clientApp";
+import useDirectory from "@/src/hooks/useDirectory";
 import {
   Button,
   Modal,
@@ -24,6 +25,7 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { BsFillEyeFill, BsFillPersonFill } from "react-icons/bs";
@@ -44,6 +46,8 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
   const [communityType, setCommunityType] = useState("public");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router  = useRouter();
+  const {toggleOpen} = useDirectory();
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 21) return;
     setCommunityName(event.target.value);
@@ -88,6 +92,9 @@ const CreateCommunitiModal: React.FC<CreateCommunitiModalProps> = ({
           { communityId: communityName, isModerator: true }
         );
       });
+      toggleOpen();
+      handleClose();
+router.push(`r/${communityName}`)
     } catch (error: any) {
       setError(error.message);
       setLoading(false);
