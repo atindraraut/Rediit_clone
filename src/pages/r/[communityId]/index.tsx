@@ -26,18 +26,18 @@ type communityPageProps = {
   communityData: Community;
 };
 
-const communitypage: React.FC<communityPageProps> = ({ communityData }) => {
-  const setCommunityStateValue = useSetRecoilState(CommunityState);
-  if (!communityData) {
-    return <NotFound />;
-  }
-
+const Communitypage: React.FC<communityPageProps> = ({ communityData }) => {
   useEffect(() => {
     setCommunityStateValue((prev) => ({
       ...prev,
       currentCommunity: communityData,
     }));
   }, [communityData]);
+  const setCommunityStateValue = useSetRecoilState(CommunityState);
+  if (!communityData) {
+    return <NotFound />;
+  }
+
   return (
     <>
       <Header communityData={communityData} />
@@ -80,4 +80,4 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return {};
   }
 }
-export default communitypage;
+export default Communitypage;

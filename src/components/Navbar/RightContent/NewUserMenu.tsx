@@ -14,7 +14,7 @@ import { signOut, User } from "firebase/auth";
 import React from "react";
 import { FaRedditSquare } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
-import {IoIosStar} from 'react-icons/io';
+import { IoIosStar } from "react-icons/io";
 import { MdOutlineLogin } from "react-icons/md";
 import { auth } from "@/src/firebase/clientApp";
 import { VscAccount } from "react-icons/vsc";
@@ -26,13 +26,13 @@ type userMenuProps = {
   user?: User | null;
 };
 
-const userMenu: React.FC<userMenuProps> = ({ user }) => {
+const UserMenu: React.FC<userMenuProps> = ({ user }) => {
   const setAuthModalState = useSetRecoilState(AuthModalState);
 
-  const logout=async()=>{
+  const logout = async () => {
     await signOut(auth);
     // resetCommunityState();
-  }
+  };
   return (
     <Menu>
       <MenuButton
@@ -61,9 +61,9 @@ const userMenu: React.FC<userMenuProps> = ({ user }) => {
                   <Text fontWeight={700}>
                     {user?.displayName || user.email?.split("@")[0]}
                   </Text>
-                  <Flex align='center'>
-                    <Icon as={IoIosStar} mr={1} color='brand.100'/>
-                    <Text color='gray.400'>1 karma</Text>
+                  <Flex align="center">
+                    <Icon as={IoIosStar} mr={1} color="brand.100" />
+                    <Text color="gray.400">1 karma</Text>
                   </Flex>
                 </Flex>
               </>
@@ -121,4 +121,4 @@ const userMenu: React.FC<userMenuProps> = ({ user }) => {
     </Menu>
   );
 };
-export default userMenu;
+export default UserMenu;

@@ -111,7 +111,7 @@ const usePosts = () => {
         }));
       }
 
-      const postRef = doc(firestore, "posts", post.id);
+      const postRef = doc(firestore, "posts", post?.id!);
       batch.update(postRef, { voteStatus: voteStatus + voteChange });
       await batch.commit();
     } catch (error) {
@@ -133,7 +133,7 @@ const usePosts = () => {
         await deleteObject(imageRef);
       }
       //delete post document from firestore
-      const postDocRef = doc(firestore, "posts", post.id);
+      const postDocRef = doc(firestore, "posts", post.id!);
       await deleteDoc(postDocRef);
 
       //update recoil state

@@ -9,7 +9,7 @@ import React from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilState } from "recoil";
 
-const submit: React.FC = () => {
+const Submit: React.FC = () => {
   const [user] = useAuthState(auth);
   const { communityStateValue } = useCommunityData();
   console.log("community", communityStateValue);
@@ -34,4 +34,4 @@ const submit: React.FC = () => {
     </PageContent>
   );
 };
-export default submit;
+export default Submit;

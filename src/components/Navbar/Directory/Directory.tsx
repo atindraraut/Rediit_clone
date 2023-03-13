@@ -16,7 +16,7 @@ import { TiHome } from "react-icons/ti";
 import Communities from "./Communities";
 import useDirectory from "@/src/hooks/useDirectory";
 
-const userMenu: React.FC = () => {
+const UserMenu: React.FC = () => {
   const { directoryState, toggleOpen } = useDirectory();
   return (
     <Menu isOpen={directoryState.isOpen}>
@@ -65,4 +65,4 @@ const userMenu: React.FC = () => {
     </Menu>
   );
 };
-export default userMenu;
+export default UserMenu;

@@ -4,18 +4,21 @@ import { User } from "firebase/auth";
 import React from "react";
 
 type SearchInputProps = {
-  user?:User|null
+  user?: User | null;
 };
 
-const SearchInput: React.FC<SearchInputProps> = ({user}) => {
+const SearchInput: React.FC<SearchInputProps> = ({ user }) => {
   return (
-    <Flex flexGrow={1} mr='2px' maxWidth={user?'auto':"600px"} align='center'>
+    <Flex
+      flexGrow={1}
+      mr="2px"
+      maxWidth={user ? "auto" : "600px"}
+      align="center"
+    >
       <InputGroup>
-        <InputLeftElement
-          pointerEvents="none"
-          children={<SearchIcon color="gray.400" />}
-          mb={1}
-        />
+        <InputLeftElement pointerEvents="none" mb={1}>
+          <SearchIcon color="gray.400" />
+        </InputLeftElement>
         <Input
           fontSize="10pt"
           placeholder="Search Reddit"
