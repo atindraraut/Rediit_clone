@@ -1,21 +1,34 @@
 import { Community } from "@/src/atoms/communitiesAtom";
 import { firestore } from "@/src/firebase/clientApp";
 import useCommunityData from "@/src/hooks/useCommunityData";
-import { Box, Button, Flex, Icon, Link, Skeleton, SkeletonCircle, Stack,Text,Image } from "@chakra-ui/react";
+import useDirectory from "@/src/hooks/useDirectory";
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Link,
+  Skeleton,
+  SkeletonCircle,
+  Stack,
+  Text,
+  Image,
+} from "@chakra-ui/react";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaReddit } from "react-icons/fa";
 
 const Recomendations: React.FC = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(false);
+  const { toggleOpen } = useDirectory();
   const { communityStateValue, onJoinOrLeaveCommunity } = useCommunityData();
   const getCommunityRecomendations = async () => {
     setLoading(true);
     try {
       const communityQuery = query(
         collection(firestore, "communities"),
-        orderBy("numberOfMembers", "desc"),
+        orderBy("numberOfMember", "desc"),
         limit(5)
       );
       const communityDocs = await getDocs(communityQuery);
@@ -29,6 +42,9 @@ const Recomendations: React.FC = () => {
     }
     setLoading(false);
   };
+  useEffect(() => {
+    getCommunityRecomendations();
+  }, []);
   return (
     <Flex
       direction="column"
@@ -131,7 +147,7 @@ const Recomendations: React.FC = () => {
               );
             })}
             <Box p="10px 20px">
-              <Button height="30px" width="100%">
+              <Button height="30px" width="100%" onClick={toggleOpen}>
                 View All
               </Button>
             </Box>

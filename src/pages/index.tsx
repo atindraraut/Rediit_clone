@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
-import { Inter, Snippet } from "@next/font/google";
+import { Inter } from "@next/font/google";
 import styles from "@/styles/Home.module.css";
 import PageContent from "../components/Layout/PageContent";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -15,16 +15,15 @@ import {
   where,
 } from "firebase/firestore";
 import usePosts from "../hooks/usePosts";
-import { Post } from "../atoms/postsAtom";
+import { Post, postVote } from "../atoms/postsAtom";
 import Postloader from "../components/Posts/Postloader";
 import { Stack } from "@chakra-ui/react";
 import PostItem from "../components/Posts/PostItem";
 import CreatePostLink from "../components/Community/CreatePostLink";
-import communitypage from "./r/[communityId]";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { CommunityState } from "../atoms/communitiesAtom";
+import Recomendations from "../components/Community/Recomendations";
 import useCommunityData from "../hooks/useCommunityData";
-
+import Premium from "../components/Community/Premium";
+import PersonalHome from "../components/Community/PersonalHome";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +37,7 @@ export default function Home() {
     onDeletepost,
     onVote,
   } = usePosts();
-  const {communityStateValue} = useCommunityData()
+  const { communityStateValue } = useCommunityData();
   const buildUserHomeFeed = async () => {
     try {
       //get posts from users communitites
@@ -56,6 +55,7 @@ export default function Home() {
           id: doc.id,
           ...doc.data(),
         }));
+        console.log("inside function", posts);
         setPostStateValue((prev) => ({
           ...prev,
           posts: posts as Post[],
@@ -67,6 +67,7 @@ export default function Home() {
       console.log("build user home feed", error);
     }
   };
+
   const buildNoUserHomeFeed = async () => {
     setLoading(true);
     try {
@@ -84,15 +85,44 @@ export default function Home() {
     setLoading(false);
   };
 
-  const getUserPostVotes = () => {};
-
+  const getUserPostVotes = async () => {
+    try {
+      const postIds = postStateValue.posts.map((post) => post.id);
+      const postVotesQuery = query(
+        collection(firestore, `users/${user?.uid}/postVotes`),
+        where("postId", "in", postIds)
+      );
+      const postVoteDocs = await getDocs(postVotesQuery);
+      const postVotes = postVoteDocs.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPostStateValue((prev) => ({
+        ...prev,
+        postVotes: postVotes as postVote[],
+      }));
+    } catch (error) {
+      console.log("getuserpostvotes error", error);
+    }
+  };
   useEffect(() => {
     if (communityStateValue.snippetsFetched) buildUserHomeFeed();
   }, [communityStateValue.snippetsFetched]);
 
   useEffect(() => {
+    if (user && postStateValue.posts.length) getUserPostVotes();
+    return () => {
+      setPostStateValue((prev) => ({
+        ...prev,
+        postVotes: [],
+      }));
+    };
+  }, [user, postStateValue.posts]);
+
+  useEffect(() => {
     if (!user && !loadingUser) buildNoUserHomeFeed();
   }, [user, loadingUser]);
+
   return (
     <PageContent>
       <>
@@ -121,7 +151,11 @@ export default function Home() {
           </Stack>
         )}
       </>
-      <>{/* {recomendation} */}</>
+      <Stack spacing={5}>
+        <Recomendations />
+        <Premium/>
+        <PersonalHome/>
+      </Stack>
     </PageContent>
   );
 }
